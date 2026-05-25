@@ -1,0 +1,68 @@
+name: Autograding Tests
+'on':
+  push:
+  repository_dispatch:
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    # Cachear node_modules
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Ejercicio 11 - Texto Avanzado
+      id: ejercicio-11
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Ejercicio 11 - Texto Avanzado
+        setup-command: ''
+        command: npm test tests/ejercicio/11-texto-avanzado.test.js
+        timeout: 10
+        max-score: 33
+    
+    - name: Ejercicio 12 - Código Informático
+      id: ejercicio-12
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Ejercicio 12 - Código Informático
+        setup-command: ''
+        command: npm test tests/ejercicio/12-codigo-informatico.test.js
+        timeout: 10
+        max-score: 33
+    
+    - name: Ejercicio 13 - Navegación e Imágenes
+      id: ejercicio-13
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Ejercicio 13 - Navegación e Imágenes
+        setup-command: ''
+        command: npm test tests/ejercicio/13-navegacion-imagenes.test.js
+        timeout: 10
+        max-score: 34
+    
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        EJERCICIO-11_RESULTS: "${{steps.ejercicio-11.outputs.result}}"
+        EJERCICIO-12_RESULTS: "${{steps.ejercicio-12.outputs.result}}"
+        EJERCICIO-13_RESULTS: "${{steps.ejercicio-13.outputs.result}}"
+      with:
+        runners: ejercicio-11,ejercicio-12,ejercicio-13
